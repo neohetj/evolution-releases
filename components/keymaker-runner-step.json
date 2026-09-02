@@ -1,0 +1,7 @@
+{
+  "schema_version": "1",
+  "component": "keymaker-runner-step",
+  "source_repository": "neohetj/keymaker",
+  "build_target": "make release-runner-step",
+  "platforms": ["darwin-arm64", "darwin-amd64", "windows-amd64"]
+}

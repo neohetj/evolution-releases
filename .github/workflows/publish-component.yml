@@ -1,0 +1,112 @@
+name: Publish component
+
+on:
+  workflow_dispatch:
+    inputs:
+      component:
+        description: Component to publish
+        required: true
+        type: choice
+        options: [operator, keymaker-runner-step]
+      version:
+        description: Immutable component version without the v prefix
+        required: true
+        type: string
+      source_commit:
+        description: Exact 40-character source commit SHA
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  attestations: write
+  id-token: write
+
+concurrency:
+  group: publish-component-${{ inputs.component }}-${{ inputs.version }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: macos-15
+    env:
+      GH_TOKEN: ${{ github.token }}
+      RELEASE_SOURCE_TOKEN: ${{ secrets.RELEASE_SOURCE_TOKEN }}
+    steps:
+      - name: Check out release control repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Validate immutable inputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "${{ inputs.version }}" =~ ^[0-9A-Za-z][0-9A-Za-z._-]*$ ]]
+          [[ "${{ inputs.source_commit }}" =~ ^[0-9a-f]{40}$ ]]
+          test -n "$RELEASE_SOURCE_TOKEN"
+          if [[ "${{ inputs.component }}" == "operator" ]]; then
+            echo "source_repository=neohetj/operator" >> "$GITHUB_ENV"
+          else
+            echo "source_repository=neohetj/keymaker" >> "$GITHUB_ENV"
+          fi
+
+      - name: Check out exact private source commit
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          repository: ${{ env.source_repository }}
+          ref: ${{ inputs.source_commit }}
+          token: ${{ env.RELEASE_SOURCE_TOKEN }}
+          path: source
+          persist-credentials: false
+
+      - name: Build component release
+        id: build
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git -C source rev-parse HEAD)" = "${{ inputs.source_commit }}"
+          tag="${{ inputs.component }}-v${{ inputs.version }}"
+          base_url="https://github.com/${GITHUB_REPOSITORY}/releases/download/$tag"
+          release_root="$RUNNER_TEMP/component-release"
+          if [[ "${{ inputs.component }}" == "operator" ]]; then
+            make -C source release \
+              VERSION="${{ inputs.version }}" \
+              RELEASE_BASE_URL="$base_url" \
+              DIST_DIR="$release_root" \
+              SOURCE_REPOSITORY="$source_repository" \
+              SOURCE_COMMIT="${{ inputs.source_commit }}"
+          else
+            make -C source release-runner-step \
+              VERSION="${{ inputs.version }}" \
+              RELEASE_BASE_URL="$base_url" \
+              DIST_DIR="$release_root" \
+              SOURCE_REPOSITORY="$source_repository" \
+              SOURCE_COMMIT="${{ inputs.source_commit }}"
+          fi
+          release_dir="$release_root/releases/v${{ inputs.version }}"
+          python3 scripts/release_contract.py validate-component \
+            --component "${{ inputs.component }}" \
+            "$release_dir/component-manifest.json"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "release_dir=$release_dir" >> "$GITHUB_OUTPUT"
+
+      - name: Attest component assets
+        uses: actions/attest-build-provenance@977bb373ede98d70efdf65b84cb5f73e068dcc2a # v3
+        with:
+          subject-path: ${{ steps.build.outputs.release_dir }}/*
+
+      - name: Publish immutable component release
+        shell: bash
+        run: |
+          set -euo pipefail
+          if gh release view "${{ steps.build.outputs.tag }}" >/dev/null 2>&1; then
+            echo "release ${{ steps.build.outputs.tag }} already exists" >&2
+            exit 1
+          fi
+          notes="$RUNNER_TEMP/release-notes.md"
+          printf 'Source: `%s@%s`\n' "$source_repository" "${{ inputs.source_commit }}" > "$notes"
+          gh release create "${{ steps.build.outputs.tag }}" \
+            "${{ steps.build.outputs.release_dir }}"/* \
+            --target "$GITHUB_SHA" \
+            --title "${{ steps.build.outputs.tag }}" \
+            --notes-file "$notes" \
+            --latest=false

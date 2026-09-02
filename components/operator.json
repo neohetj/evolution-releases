@@ -1,0 +1,7 @@
+{
+  "schema_version": "1",
+  "component": "operator",
+  "source_repository": "neohetj/operator",
+  "build_target": "make release",
+  "platforms": ["darwin-arm64", "darwin-amd64", "windows-amd64"]
+}
