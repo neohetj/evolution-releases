@@ -1,0 +1,79 @@
+name: Publish Runner bundle
+
+on:
+  workflow_dispatch:
+    inputs:
+      bundle_version:
+        description: Immutable Runner bundle version without the v prefix
+        required: true
+        type: string
+      operator_version:
+        description: Published Operator component version
+        required: true
+        type: string
+      runner_step_version:
+        description: Published keymaker-runner-step component version
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  attestations: write
+  id-token: write
+
+concurrency:
+  group: publish-runner-bundle-${{ inputs.bundle_version }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Download immutable component manifests
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/operator" "$RUNNER_TEMP/runner-step"
+          gh release download "operator-v${{ inputs.operator_version }}" \
+            --pattern component-manifest.json --dir "$RUNNER_TEMP/operator"
+          gh release download "keymaker-runner-step-v${{ inputs.runner_step_version }}" \
+            --pattern component-manifest.json --dir "$RUNNER_TEMP/runner-step"
+
+      - name: Compose and validate Runner bundle
+        id: bundle
+        shell: bash
+        run: |
+          set -euo pipefail
+          output="$RUNNER_TEMP/runner-bundle-manifest.json"
+          python3 scripts/release_contract.py compose-runner-bundle \
+            --version "${{ inputs.bundle_version }}" \
+            --operator "$RUNNER_TEMP/operator/component-manifest.json" \
+            --runner-step "$RUNNER_TEMP/runner-step/component-manifest.json" \
+            --output "$output"
+          python3 scripts/release_contract.py validate-bundle "$output"
+          echo "manifest=$output" >> "$GITHUB_OUTPUT"
+          echo "tag=runner-bundle-v${{ inputs.bundle_version }}" >> "$GITHUB_OUTPUT"
+
+      - name: Attest Runner bundle
+        uses: actions/attest-build-provenance@977bb373ede98d70efdf65b84cb5f73e068dcc2a # v3
+        with:
+          subject-path: ${{ steps.bundle.outputs.manifest }}
+
+      - name: Publish immutable Runner bundle
+        shell: bash
+        run: |
+          set -euo pipefail
+          if gh release view "${{ steps.bundle.outputs.tag }}" >/dev/null 2>&1; then
+            echo "release ${{ steps.bundle.outputs.tag }} already exists" >&2
+            exit 1
+          fi
+          gh release create "${{ steps.bundle.outputs.tag }}" \
+            "${{ steps.bundle.outputs.manifest }}" \
+            --target "$GITHUB_SHA" \
+            --title "${{ steps.bundle.outputs.tag }}" \
+            --notes "Operator ${{ inputs.operator_version }} + keymaker-runner-step ${{ inputs.runner_step_version }}" \
+            --latest=false

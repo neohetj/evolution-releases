@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/neohetj/evolution-releases/schemas/runner-bundle-manifest.schema.json",
+  "title": "Evolution Runner compatibility bundle",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "bundle", "version", "components"],
+  "properties": {
+    "schema_version": {"const": "2"},
+    "bundle": {"const": "runner"},
+    "version": {"type": "string", "pattern": "^[0-9A-Za-z][0-9A-Za-z._-]*$"},
+    "components": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["operator", "keymaker-runner-step"],
+      "properties": {
+        "operator": {"$ref": "component-manifest.schema.json"},
+        "keymaker-runner-step": {"$ref": "component-manifest.schema.json"}
+      }
+    }
+  }
+}

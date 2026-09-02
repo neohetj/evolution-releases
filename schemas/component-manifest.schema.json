@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/neohetj/evolution-releases/schemas/component-manifest.schema.json",
+  "title": "Evolution component release manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "component", "version", "source", "artifacts"],
+  "properties": {
+    "schema_version": {"const": "2"},
+    "component": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$"},
+    "version": {"type": "string", "pattern": "^[0-9A-Za-z][0-9A-Za-z._-]*$"},
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repository", "commit"],
+      "properties": {
+        "repository": {"type": "string", "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"},
+        "commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"}
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["platform", "os", "arch", "filename", "url", "sha256"],
+        "properties": {
+          "platform": {"enum": ["darwin-arm64", "darwin-amd64", "windows-amd64"]},
+          "os": {"enum": ["darwin", "windows"]},
+          "arch": {"enum": ["arm64", "amd64"]},
+          "filename": {"type": "string"},
+          "url": {"type": "string", "pattern": "^https://"},
+          "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "schema_version": "1",
+  "bundle": "runner",
+  "required_components": ["operator", "keymaker-runner-step"],
+  "platforms": ["darwin-arm64", "darwin-amd64", "windows-amd64"]
+}

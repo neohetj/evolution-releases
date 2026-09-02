@@ -1,0 +1,52 @@
+name: Promote Runner channel
+
+on:
+  workflow_dispatch:
+    inputs:
+      bundle_version:
+        description: Existing immutable Runner bundle version
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate and copy immutable bundle manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          temp_dir="$RUNNER_TEMP/runner-bundle"
+          mkdir -p "$temp_dir"
+          gh release download "runner-bundle-v${{ inputs.bundle_version }}" \
+            --pattern runner-bundle-manifest.json --dir "$temp_dir"
+          python3 scripts/release_contract.py validate-bundle \
+            "$temp_dir/runner-bundle-manifest.json"
+          cp "$temp_dir/runner-bundle-manifest.json" channels/runner-stable.json
+
+      - name: Open stable channel promotion PR
+        shell: bash
+        run: |
+          set -euo pipefail
+          branch="release/promote-runner-stable-v${{ inputs.bundle_version }}"
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git checkout -b "$branch"
+          git add channels/runner-stable.json
+          git commit -m "chore: Promote Runner bundle ${{ inputs.bundle_version }}"
+          git push origin "$branch"
+          gh pr create \
+            --base main \
+            --head "$branch" \
+            --title "chore: Promote Runner bundle ${{ inputs.bundle_version }}" \
+            --body "Promote the reviewed immutable Runner bundle to the stable channel."
