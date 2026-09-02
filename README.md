@@ -3,6 +3,8 @@
 本仓库统一管理 Evolution 二进制的发布编排与不可变分发元数据。
 组件源码仍保留在各自的私有仓库中；二进制以 GitHub Release Asset 发布，不提交为 Git blob。
 
+完整操作步骤见[《Evolution 二进制发布操作指南》](docs/binary-release-guide.md)。
+
 ## 已发布组件
 
 | 组件 | 源码仓库 | 构建目标 |
