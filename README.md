@@ -16,10 +16,10 @@
 
 ## 发布流程
 
-1. 手动触发 `Publish component`，填写组件、版本、精确的 40 位组件源码 commit 和 Matrix
-   依赖 commit。
-2. 工作流检出组件及 Matrix 的精确私有仓库 commit，执行源码仓库定义的交叉构建，校验组件
-   清单，为每个产物生成来源证明，并创建新的不可变组件 Release。
+1. 手动触发 `Publish component`，填写组件、版本、精确的 40 位组件源码 commit，以及 Matrix
+   依赖的 40 位 commit 或不可变 tag。
+2. 工作流检出组件和 Matrix，校验 Matrix tag 确实来自 tag ref 并解析最终 commit，执行源码仓库
+   定义的交叉构建，校验组件清单，为每个产物生成来源证明，并创建新的不可变组件 Release。
 3. 使用两个已经发布的组件版本触发 `Publish Runner bundle`。
 4. 触发 `Promote Runner channel`；工作流会创建 PR，将不可变的 Bundle 清单复制到 `channels/runner-stable.json`。
 

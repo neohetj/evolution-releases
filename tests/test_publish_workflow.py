@@ -28,10 +28,15 @@ class PublishWorkflowTest(unittest.TestCase):
             ),
         )
 
-    def test_checks_out_an_exact_matrix_dependency_before_building(self) -> None:
-        self.assertIn("      matrix_commit:", self.workflow)
+    def test_accepts_an_exact_matrix_commit_or_tag_before_building(self) -> None:
+        self.assertIn("      matrix_ref:", self.workflow)
+        self.assertIn("      MATRIX_REF: ${{ inputs.matrix_ref }}", self.workflow)
         self.assertIn(
-            '[[ "${{ inputs.matrix_commit }}" =~ ^[0-9a-f]{40}$ ]]',
+            '[[ "$MATRIX_REF" =~ ^[0-9a-f]{40}$ ]]',
+            self.workflow,
+        )
+        self.assertIn(
+            'git -C matrix show-ref --verify --quiet "refs/tags/$MATRIX_REF"',
             self.workflow,
         )
         self.assertRegex(
@@ -41,7 +46,7 @@ class PublishWorkflowTest(unittest.TestCase):
                 r"        uses: actions/checkout@[0-9a-f]{40} # v\d+\n"
                 r"        with:\n"
                 r"          repository: neohetj/matrix\n"
-                r"          ref: \$\{\{ inputs\.matrix_commit \}\}\n"
+                r"          ref: \$\{\{ inputs\.matrix_ref \}\}\n"
                 r"          token: \$\{\{ env\.RELEASE_SOURCE_TOKEN \}\}\n"
                 r"          path: matrix\n"
                 r"          persist-credentials: false"
@@ -59,7 +64,11 @@ class PublishWorkflowTest(unittest.TestCase):
         self.assertLess(matrix_checkout, matrix_dependency)
         self.assertLess(matrix_dependency, component_build)
         self.assertIn(
-            'test "$(git -C matrix rev-parse HEAD)" = "${{ inputs.matrix_commit }}"',
+            'matrix_commit="$(git -C matrix rev-parse HEAD)"',
+            self.workflow,
+        )
+        self.assertIn(
+            'echo "matrix_commit=$matrix_commit" >> "$GITHUB_ENV"',
             self.workflow,
         )
         self.assertIn(
