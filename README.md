@@ -1,47 +1,43 @@
-# Evolution Releases
+# Evolution 发布仓库
 
-Central release orchestration and immutable distribution metadata for Evolution binaries.
-Component source remains in its owning private repository; binaries are GitHub Release assets,
-never Git blobs.
+本仓库统一管理 Evolution 二进制的发布编排与不可变分发元数据。
+组件源码仍保留在各自的私有仓库中；二进制以 GitHub Release Asset 发布，不提交为 Git blob。
 
-## Published components
+## 已发布组件
 
-| Component | Source | Build target |
+| 组件 | 源码仓库 | 构建目标 |
 | --- | --- | --- |
 | `operator` | `neohetj/operator` | `make release` |
 | `keymaker-runner-step` | `neohetj/keymaker` | `make release-runner-step` |
 
-Each component has an independent semantic version and release tag, such as
-`operator-v1.4.2`. `runner-bundle-v<version>` freezes one compatible version of both components.
-The reviewed `channels/runner-stable.json` file is the only mutable stable pointer.
+每个组件拥有独立的语义版本和 Release Tag，例如 `operator-v1.4.2`。
+`runner-bundle-v<version>` 会冻结两个组件的一组兼容版本。
+经过评审的 `channels/runner-stable.json` 是唯一可变的 stable 指针。
 
-## Release flow
+## 发布流程
 
-1. Dispatch `Publish component` with a component, version, and exact 40-character source commit.
-2. The workflow checks out that private commit, runs the source-owned cross-build, validates the
-   component manifest, attests every output, and creates a new immutable component release.
-3. Dispatch `Publish Runner bundle` with two already published component versions.
-4. Dispatch `Promote Runner channel`; it opens a PR that copies the immutable bundle manifest to
-   `channels/runner-stable.json`.
+1. 手动触发 `Publish component`，填写组件、版本和精确的 40 位源码 commit。
+2. 工作流检出该私有仓库 commit，执行源码仓库定义的交叉构建，校验组件清单，为每个产物生成来源证明，并创建新的不可变组件 Release。
+3. 使用两个已经发布的组件版本触发 `Publish Runner bundle`。
+4. 触发 `Promote Runner channel`；工作流会创建 PR，将不可变的 Bundle 清单复制到 `channels/runner-stable.json`。
 
-The repository secret `RELEASE_SOURCE_TOKEN` must be a fine-grained token or GitHub App token with
-read-only Contents access to `neohetj/operator` and `neohetj/keymaker`. It receives no write access
-to this repository; release creation uses this workflow's scoped `GITHUB_TOKEN`.
+仓库 Secret `RELEASE_SOURCE_TOKEN` 必须是 fine-grained token 或 GitHub App token，且只拥有
+`neohetj/operator` 和 `neohetj/keymaker` 的 Contents 只读权限。该 Token 不拥有本仓库的写权限；
+创建 Release 时使用当前工作流权限受限的 `GITHUB_TOKEN`。
 
-Enable GitHub immutable releases before the first production publication. Never use asset
-overwrite flags or reuse a component or bundle version.
+首次生产发布前必须启用 GitHub immutable releases。不得使用覆盖 Asset 的参数，也不得复用已发布的组件或 Bundle 版本。
 
-## Consumer URL
+## 消费地址
 
-Keymaker should use the reviewed stable channel:
+Keymaker 应使用经过评审的 stable channel：
 
 ```text
 https://raw.githubusercontent.com/neohetj/evolution-releases/main/channels/runner-stable.json
 ```
 
-Production environments may instead pin the exact immutable bundle asset URL.
+生产环境也可以直接固定到某个不可变 Bundle 清单的 Asset URL。
 
-## Local validation
+## 本地验证
 
 ```bash
 make check
