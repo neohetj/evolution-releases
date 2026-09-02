@@ -16,14 +16,16 @@
 
 ## 发布流程
 
-1. 手动触发 `Publish component`，填写组件、版本和精确的 40 位源码 commit。
-2. 工作流检出该私有仓库 commit，执行源码仓库定义的交叉构建，校验组件清单，为每个产物生成来源证明，并创建新的不可变组件 Release。
+1. 手动触发 `Publish component`，填写组件、版本、精确的 40 位组件源码 commit，以及 Matrix
+   依赖的 40 位 commit 或不可变 tag。
+2. 工作流检出组件和 Matrix，校验 Matrix tag 确实来自 tag ref 并解析最终 commit，执行源码仓库
+   定义的交叉构建，校验组件清单，为每个产物生成来源证明，并创建新的不可变组件 Release。
 3. 使用两个已经发布的组件版本触发 `Publish Runner bundle`。
 4. 触发 `Promote Runner channel`；工作流会创建 PR，将不可变的 Bundle 清单复制到 `channels/runner-stable.json`。
 
 仓库 Secret `RELEASE_SOURCE_TOKEN` 必须是 fine-grained token 或 GitHub App token，且只拥有
-`neohetj/operator` 和 `neohetj/keymaker` 的 Contents 只读权限。该 Token 不拥有本仓库的写权限；
-创建 Release 时使用当前工作流权限受限的 `GITHUB_TOKEN`。
+`neohetj/operator`、`neohetj/keymaker` 和 `neohetj/matrix` 的 Contents 只读权限。该 Token
+不拥有本仓库的写权限；创建 Release 时使用当前工作流权限受限的 `GITHUB_TOKEN`。
 
 首次生产发布前必须启用 GitHub immutable releases。不得使用覆盖 Asset 的参数，也不得复用已发布的组件或 Bundle 版本。
 

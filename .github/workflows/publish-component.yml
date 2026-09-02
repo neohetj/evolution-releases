@@ -16,6 +16,10 @@ on:
         description: Exact 40-character source commit SHA
         required: true
         type: string
+      matrix_ref:
+        description: Exact Matrix dependency commit SHA or immutable tag
+        required: true
+        type: string
 
 permissions:
   contents: write
@@ -32,6 +36,7 @@ jobs:
     env:
       GH_TOKEN: ${{ github.token }}
       RELEASE_SOURCE_TOKEN: ${{ secrets.RELEASE_SOURCE_TOKEN }}
+      MATRIX_REF: ${{ inputs.matrix_ref }}
     steps:
       - name: Check out release control repository
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -42,6 +47,14 @@ jobs:
           set -euo pipefail
           [[ "${{ inputs.version }}" =~ ^[0-9A-Za-z][0-9A-Za-z._-]*$ ]]
           [[ "${{ inputs.source_commit }}" =~ ^[0-9a-f]{40}$ ]]
+          if [[ "$MATRIX_REF" =~ ^[0-9a-f]{40}$ ]]; then
+            :
+          elif [[ "$MATRIX_REF" =~ ^[0-9A-Za-z][0-9A-Za-z._-]*$ ]]; then
+            :
+          else
+            echo "matrix_ref must be a 40-character commit SHA or immutable tag" >&2
+            exit 2
+          fi
           test -n "$RELEASE_SOURCE_TOKEN"
           if [[ "${{ inputs.component }}" == "operator" ]]; then
             echo "source_repository=neohetj/operator" >> "$GITHUB_ENV"
@@ -58,11 +71,36 @@ jobs:
           path: source
           persist-credentials: false
 
+      - name: Check out exact private Matrix commit
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          repository: neohetj/matrix
+          ref: ${{ inputs.matrix_ref }}
+          token: ${{ env.RELEASE_SOURCE_TOKEN }}
+          path: matrix
+          persist-credentials: false
+
       - name: Set up Go
         uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6
         with:
           go-version-file: source/go.mod
           cache-dependency-path: source/go.sum
+
+      - name: Prepare exact Matrix dependency
+        shell: bash
+        run: |
+          set -euo pipefail
+          matrix_commit="$(git -C matrix rev-parse HEAD)"
+          if [[ "$MATRIX_REF" =~ ^[0-9a-f]{40}$ ]]; then
+            test "$matrix_commit" = "$MATRIX_REF"
+          else
+            git -C matrix show-ref --verify --quiet "refs/tags/$MATRIX_REF"
+            tag_commit="$(git -C matrix rev-parse "refs/tags/$MATRIX_REF^{commit}")"
+            test "$matrix_commit" = "$tag_commit"
+          fi
+          echo "matrix_commit=$matrix_commit" >> "$GITHUB_ENV"
+          cd source
+          go mod edit -replace="github.com/neohetj/matrix=$GITHUB_WORKSPACE/matrix"
 
       - name: Build component release
         id: build
@@ -110,7 +148,8 @@ jobs:
             exit 1
           fi
           notes="$RUNNER_TEMP/release-notes.md"
-          printf 'Source: `%s@%s`\n' "$source_repository" "${{ inputs.source_commit }}" > "$notes"
+          printf 'Source: `%s@%s`\nMatrix dependency ref: `%s`\nMatrix dependency commit: `neohetj/matrix@%s`\n' \
+            "$source_repository" "${{ inputs.source_commit }}" "$MATRIX_REF" "$matrix_commit" > "$notes"
           gh release create "${{ steps.build.outputs.tag }}" \
             "${{ steps.build.outputs.release_dir }}"/* \
             --target "$GITHUB_SHA" \
