@@ -71,13 +71,14 @@ jobs:
             make -C source release \
               VERSION="${{ inputs.version }}" \
               RELEASE_BASE_URL="$base_url" \
+              RELEASE_ARTIFACT_BASE_URL="$base_url" \
               DIST_DIR="$release_root" \
               SOURCE_REPOSITORY="$source_repository" \
               SOURCE_COMMIT="${{ inputs.source_commit }}"
           else
             make -C source release-runner-step \
               VERSION="${{ inputs.version }}" \
-              RELEASE_BASE_URL="$base_url" \
+              RELEASE_ARTIFACT_BASE_URL="$base_url" \
               DIST_DIR="$release_root" \
               SOURCE_REPOSITORY="$source_repository" \
               SOURCE_COMMIT="${{ inputs.source_commit }}"

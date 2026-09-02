@@ -81,6 +81,12 @@ class ReleaseContractTest(unittest.TestCase):
                 manifest, expected_component="keymaker-runner-step"
             )
 
+    def test_rejects_a_component_from_the_wrong_source_repository(self) -> None:
+        manifest = component_manifest("operator", "1.4.2", "untrusted/operator")
+
+        with self.assertRaisesRegex(ContractError, "source repository"):
+            validate_component_manifest(manifest, expected_component="operator")
+
 
 if __name__ == "__main__":
     unittest.main()

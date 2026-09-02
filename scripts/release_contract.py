@@ -17,6 +17,10 @@ SUPPORTED_PLATFORMS = {
     "darwin-amd64": ("darwin", "amd64"),
     "windows-amd64": ("windows", "amd64"),
 }
+COMPONENT_REPOSITORIES = {
+    "operator": "neohetj/operator",
+    "keymaker-runner-step": "neohetj/keymaker",
+}
 SAFE_VERSION = re.compile(r"^[0-9A-Za-z][0-9A-Za-z._-]*$")
 SAFE_COMPONENT = re.compile(r"^[a-z0-9][a-z0-9-]*$")
 SOURCE_REPOSITORY = re.compile(r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$")
@@ -110,6 +114,11 @@ def validate_component_manifest(
         )
     version = _require_version(value["version"], "component version")
     _validate_source(value["source"])
+    expected_repository = COMPONENT_REPOSITORIES.get(component)
+    if expected_repository is None or value["source"]["repository"] != expected_repository:
+        raise ContractError(
+            f"component {component} source repository must be {expected_repository}"
+        )
     if not isinstance(value["artifacts"], list):
         raise ContractError("artifacts must be an array")
     platforms = [
