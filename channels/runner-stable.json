@@ -1,75 +1,75 @@
 {
   "schema_version": "2",
   "bundle": "runner",
-  "version": "0.1.0-alpha.3",
+  "version": "0.1.0-alpha.4",
   "components": {
     "operator": {
       "schema_version": "2",
       "component": "operator",
-      "version": "0.1.0-alpha.3",
+      "version": "0.1.0-alpha.4",
       "source": {
         "repository": "neohetj/operator",
-        "commit": "dd4017483cd91b09c5e876d51c2f7fab06ee9419"
+        "commit": "a094b6d58ac267a689499c235dc3c96a7efc7863"
       },
       "artifacts": [
         {
           "platform": "darwin-amd64",
           "os": "darwin",
           "arch": "amd64",
-          "filename": "operator_0.1.0-alpha.3_darwin_amd64",
-          "url": "https://github.com/neohetj/evolution-releases/releases/download/operator-v0.1.0-alpha.3/operator_0.1.0-alpha.3_darwin_amd64",
-          "sha256": "0f319181ad123f629827ec5f462b05f3b9304553f13c1fb0c78dbf6e4f03d6a7"
+          "filename": "operator_0.1.0-alpha.4_darwin_amd64",
+          "url": "https://github.com/neohetj/evolution-releases/releases/download/operator-v0.1.0-alpha.4/operator_0.1.0-alpha.4_darwin_amd64",
+          "sha256": "c292ceb875eb860a66a3b244d31b4138c3215fdb5dbb40e6eb0f3947225dc593"
         },
         {
           "platform": "darwin-arm64",
           "os": "darwin",
           "arch": "arm64",
-          "filename": "operator_0.1.0-alpha.3_darwin_arm64",
-          "url": "https://github.com/neohetj/evolution-releases/releases/download/operator-v0.1.0-alpha.3/operator_0.1.0-alpha.3_darwin_arm64",
-          "sha256": "24a8fab9ea8443ccec1054e0acd84912817201380c8d4c5e6550995b52e23ccb"
+          "filename": "operator_0.1.0-alpha.4_darwin_arm64",
+          "url": "https://github.com/neohetj/evolution-releases/releases/download/operator-v0.1.0-alpha.4/operator_0.1.0-alpha.4_darwin_arm64",
+          "sha256": "297cc9e468074c99fc9d4bd50203d60b13682515dc655f6f2301526e4b46452b"
         },
         {
           "platform": "windows-amd64",
           "os": "windows",
           "arch": "amd64",
-          "filename": "operator_0.1.0-alpha.3_windows_amd64.exe",
-          "url": "https://github.com/neohetj/evolution-releases/releases/download/operator-v0.1.0-alpha.3/operator_0.1.0-alpha.3_windows_amd64.exe",
-          "sha256": "53a54474958bc379d06b06d5805e5b628ae083976c852db1f8bdfa4e684d0b8c"
+          "filename": "operator_0.1.0-alpha.4_windows_amd64.exe",
+          "url": "https://github.com/neohetj/evolution-releases/releases/download/operator-v0.1.0-alpha.4/operator_0.1.0-alpha.4_windows_amd64.exe",
+          "sha256": "db61d0df742c094eae73fd1cebc84a87485f90925cb979652796ae9ca8cc1ae3"
         }
       ]
     },
     "keymaker-runner-step": {
       "schema_version": "2",
       "component": "keymaker-runner-step",
-      "version": "0.1.0-alpha.3",
+      "version": "0.1.0-alpha.4",
       "source": {
         "repository": "neohetj/keymaker",
-        "commit": "ff831300962c1f32a63383a913835826277a56af"
+        "commit": "7e0d1c47dc16fd6bee66bc118831f5e624a77e17"
       },
       "artifacts": [
         {
           "platform": "darwin-amd64",
           "os": "darwin",
           "arch": "amd64",
-          "filename": "keymaker-runner-step_0.1.0-alpha.3_darwin_amd64",
-          "url": "https://github.com/neohetj/evolution-releases/releases/download/keymaker-runner-step-v0.1.0-alpha.3/keymaker-runner-step_0.1.0-alpha.3_darwin_amd64",
-          "sha256": "eef64b46f2400b123377c503ce769ffe74496dd62f320d2b0d779278474bd534"
+          "filename": "keymaker-runner-step_0.1.0-alpha.4_darwin_amd64",
+          "url": "https://github.com/neohetj/evolution-releases/releases/download/keymaker-runner-step-v0.1.0-alpha.4/keymaker-runner-step_0.1.0-alpha.4_darwin_amd64",
+          "sha256": "70697ce9b7ed60f26f0a4e4c3c1d5c22fd699e6c41ac17bacd9afb62b1810532"
         },
         {
           "platform": "darwin-arm64",
           "os": "darwin",
           "arch": "arm64",
-          "filename": "keymaker-runner-step_0.1.0-alpha.3_darwin_arm64",
-          "url": "https://github.com/neohetj/evolution-releases/releases/download/keymaker-runner-step-v0.1.0-alpha.3/keymaker-runner-step_0.1.0-alpha.3_darwin_arm64",
-          "sha256": "13a03f79a7deae4822926b6b7e480190499f082cbff2bcc23603c3d7a026f39e"
+          "filename": "keymaker-runner-step_0.1.0-alpha.4_darwin_arm64",
+          "url": "https://github.com/neohetj/evolution-releases/releases/download/keymaker-runner-step-v0.1.0-alpha.4/keymaker-runner-step_0.1.0-alpha.4_darwin_arm64",
+          "sha256": "613b546b858066ed3053f88e67e26cd2d05cde95a30089ad86190dbe4cf31d04"
         },
         {
           "platform": "windows-amd64",
           "os": "windows",
           "arch": "amd64",
-          "filename": "keymaker-runner-step_0.1.0-alpha.3_windows_amd64.exe",
-          "url": "https://github.com/neohetj/evolution-releases/releases/download/keymaker-runner-step-v0.1.0-alpha.3/keymaker-runner-step_0.1.0-alpha.3_windows_amd64.exe",
-          "sha256": "cbd4d1fae662ef99c16fdb0588d39713a3526b82797cf7e1498f77cf17d55e02"
+          "filename": "keymaker-runner-step_0.1.0-alpha.4_windows_amd64.exe",
+          "url": "https://github.com/neohetj/evolution-releases/releases/download/keymaker-runner-step-v0.1.0-alpha.4/keymaker-runner-step_0.1.0-alpha.4_windows_amd64.exe",
+          "sha256": "de09ec4f9faf0c15f4fa0e68e76cf16cc010fdbbdb14187e9979e6cfda0ceb9d"
         }
       ]
     }
